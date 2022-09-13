@@ -10,6 +10,8 @@ func LoadBase(e *gin.Engine) {
 
 	e.POST("/login", Login)
 
+	e.POST("/calDupName", CalDupName)
+
 	e.NoRoute(Page404)
 
 }
