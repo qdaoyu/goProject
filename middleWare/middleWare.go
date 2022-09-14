@@ -1,91 +1,56 @@
 package middleWare
 
 import (
+	"errors"
 	"log"
-	"net/http"
-	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
-// gin jwt-go生成token及jwt中间件验证
-// Jwtkey 秘钥 可通过配置文件配置
-var Jwtkey = []byte("blog_jwt_key")
-
+// MyClaims 自定义声明结构体并内嵌jwt.StandardClaims
+// jwt包自带的jwt.StandardClaims只包含了官方字段
+// 我们这里需要额外记录一个username字段，所以要自定义结构体
+// 如果想要保存更多信息，都可以添加到这个结构体中
 type MyClaims struct {
-	UserId   int    `json:"user_id"`
-	UserName string `json:"username"`
+	Username string `json:"username"`
 	jwt.StandardClaims
 }
 
-// CreateToken 生成token
-func CreateToken(userId int, userName string) (string, error) {
-	expireTime := time.Now().Add(2 * time.Hour) //过期时间
-	nowTime := time.Now()                       //当前时间
-	claims := MyClaims{
-		UserId:   userId,
-		UserName: userName,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expireTime.Unix(), //过期时间戳
-			IssuedAt:  nowTime.Unix(),    //当前时间戳
-			Issuer:    "blogLeo",         //颁发者签名
-			Subject:   "userToken",       //签名主题
+const TokenExpireDuration = time.Hour * 2
+
+var MySecret = []byte("夏天夏天悄悄过去")
+
+// GenToken 生成JWT
+func GenToken(username string) (string, error) {
+	// 创建一个我们自己的声明
+	c := MyClaims{
+		username, // 自定义字段
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(TokenExpireDuration).Unix(), // 过期时间
+			Issuer:    "qiudaoyu",                                 // 签发人
 		},
 	}
-	tokenStruct := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return tokenStruct.SignedString(Jwtkey)
+	// 使用指定的签名方法创建签名对象
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
+	// 使用指定的secret签名并获得完整的编码后的字符串token
+	return token.SignedString(MySecret)
 }
 
-// CheckToken 验证token
-func CheckToken(token string) (*MyClaims, bool) {
-	tokenObj, _ := jwt.ParseWithClaims(token, &MyClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return Jwtkey, nil
+// ParseToken 解析JWT
+func ParseToken(tokenString string) (*MyClaims, error) {
+	// 解析token
+	token, err := jwt.ParseWithClaims(tokenString, &MyClaims{}, func(token *jwt.Token) (i interface{}, err error) {
+		return MySecret, nil
 	})
-	if key, _ := tokenObj.Claims.(*MyClaims); tokenObj.Valid {
-		return key, true
-	} else {
-		return nil, false
+	if err != nil {
+		return nil, err
 	}
-}
-
-// JwtMiddleware jwt中间件
-func JwtMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		//从请求头中获取token
-		tokenStr := c.Request.Header.Get("Authorization")
-		//用户不存在
-		if tokenStr == "" {
-			c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "用户不存在"})
-			c.Abort() //阻止执行
-			return
-		}
-		//token格式错误
-		tokenSlice := strings.SplitN(tokenStr, " ", 2)
-		if len(tokenSlice) != 2 && tokenSlice[0] != "Bearer" {
-			c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "token格式错误"})
-			c.Abort() //阻止执行
-			return
-		}
-		//验证token
-		tokenStruck, ok := CheckToken(tokenSlice[1])
-		if !ok {
-			c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "token不正确"})
-			c.Abort() //阻止执行
-			return
-		}
-		//token超时
-		if time.Now().Unix() > tokenStruck.ExpiresAt {
-			c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "token过期"})
-			c.Abort() //阻止执行
-			return
-		}
-		c.Set("username", tokenStruck.UserName)
-		c.Set("user_id", tokenStruck.UserId)
-
-		c.Next()
+	if claims, ok := token.Claims.(*MyClaims); ok && token.Valid { // 校验token
+		return claims, nil
 	}
+	return nil, errors.New("invalid token")
 }
 
 //------------------------------------------
