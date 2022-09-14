@@ -1,0 +1,42 @@
+1.gin.Context 
+type Context struct {
+    writermem responseWriter // 响应处理
+    Request   *http.Request  // 请求信息
+    Writer    ResponseWriter // 响应处理接口
+
+    Params   Params          // URL参数
+    handlers HandlersChain   // 请求处理列表 
+    index    int8            // 用于对中间件进行流程控制
+    fullPath string          // http请求的全路径地址
+
+    engine       *Engine     // gin框架的Engine结构体指针
+    params       *Params
+    skippedNodes *[]skippedNode
+
+    // This mutex protect Keys map
+    // 对下面的Keys字段进行写保护的锁
+    mu sync.RWMutex
+
+    // Keys is a key/value pair exclusively for the context of each request.
+    // 元数据，用于在中间件中共享变量使用
+    Keys map[string]interface{}
+
+    // Errors is a list of errors attached to all the handlers/middlewares who used this context.
+    Errors errorMsgs
+
+    // Accepted defines a list of manually accepted formats for content negotiation.
+    Accepted []string
+
+    // queryCache use url.ParseQuery cached the param query result from c.Request.URL.Query()
+    // 管理解析后的Query参数
+    queryCache url.Values
+
+    // formCache use url.ParseQuery cached PostForm contains the parsed form data from POST, PATCH,
+    // or PUT body parameters.
+    // 管理解析后的Form参数
+    formCache url.Values
+
+    // SameSite allows a server to define a cookie attribute making it impossible for
+    // the browser to send this cookie along with cross-site requests.
+    sameSite http.SameSite
+}

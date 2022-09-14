@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os/exec"
 
+	"qiudaoyu/middleWare"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,7 +21,12 @@ type Data struct {
 }
 
 // ----token部分----
-// func authHandler(c *gin.Context) {
+type UserInfo struct {
+	Username string `form:"username" json:"username" binding:"required"`
+	Password string `form:"password" json:"password" binding:"required"`
+}
+
+// func AuthHandler(c *gin.Context) {
 // 	// 用户发送用户名和密码过来
 // 	var user UserInfo
 // 	err := c.ShouldBind(&user)
@@ -33,7 +40,7 @@ type Data struct {
 // 	// 校验用户名和密码是否正确
 // 	if user.Username == "q1mi" && user.Password == "q1mi123" {
 // 		// 生成Token
-// 		tokenString, _ := GenToken(user.Username)
+// 		tokenString, _ := middleWare.GenToken(user.Username)
 // 		c.JSON(http.StatusOK, gin.H{
 // 			"code": 2000,
 // 			"msg":  "success",
@@ -48,7 +55,7 @@ type Data struct {
 // 	return
 // }
 
-//------------
+//---------------
 
 func UploadHandler(c *gin.Context) {
 	file, err := c.FormFile("file")
@@ -66,27 +73,35 @@ func UploadHandler(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
-	username := c.PostForm("username")
-	password := c.PostForm("password")
-	fmt.Printf("username:%s  password:%s \n", username, password)
-	if username == "qiudaoyu" && password == "123" {
-		fmt.Printf("返回数据1")
+	// username := c.PostForm("username")
+	// password := c.PostForm("password")
+	var user UserInfo
+	err := c.ShouldBind(&user)
+	fmt.Println("userInfo:", user)
+	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
-			"code": 200,
-			// "data": gin.H{
-			// 	"code":    200,
-			// 	"message": "登录成功",
-			// },
-			"message": "登录成功",
+			"code":    2001,
+			"message": "无效的参数",
 		})
-	} else {
-		fmt.Printf("返回数据")
-		c.JSON(http.StatusOK, gin.H{
-			"code":    500,
-			"message": "帐号密码错误",
-		})
-
+		return
 	}
+	// 校验用户名和密码是否正确
+	if user.Username == "q" && user.Password == "q" {
+		// 生成Token
+		tokenString, _ := middleWare.GenToken(user.Username)
+		c.JSON(http.StatusOK, gin.H{
+			"code":    200,
+			"message": "登录成功",
+			"data":    gin.H{"token": tokenString},
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code":    2002,
+		"message": "鉴权失败",
+	})
+	return
+
 }
 
 func CalDupName(c *gin.Context) {
@@ -116,15 +131,16 @@ func CalDupName(c *gin.Context) {
 		//-----------------------
 		// fmt.Println(m)
 		c.JSON(http.StatusOK, gin.H{
-			"code": 200,
-			"data": data,
+			"code":    200,
+			"message": "计算成功",
+			"data":    data,
 		})
 
 	} else {
-		fmt.Println(err)
 		c.JSON(http.StatusOK, gin.H{
 			"code":    50001,
 			"message": "输入内容非法",
+			"data":    gin.H{},
 		})
 	}
 
