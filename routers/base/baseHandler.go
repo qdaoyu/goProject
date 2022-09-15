@@ -6,8 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os/exec"
-
 	"qiudaoyu/middleWare"
+	"qiudaoyu/models/menuInfo"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,37 +25,6 @@ type UserInfo struct {
 	Username string `form:"username" json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
 }
-
-// func AuthHandler(c *gin.Context) {
-// 	// 用户发送用户名和密码过来
-// 	var user UserInfo
-// 	err := c.ShouldBind(&user)
-// 	if err != nil {
-// 		c.JSON(http.StatusOK, gin.H{
-// 			"code": 2001,
-// 			"msg":  "无效的参数",
-// 		})
-// 		return
-// 	}
-// 	// 校验用户名和密码是否正确
-// 	if user.Username == "q1mi" && user.Password == "q1mi123" {
-// 		// 生成Token
-// 		tokenString, _ := middleWare.GenToken(user.Username)
-// 		c.JSON(http.StatusOK, gin.H{
-// 			"code": 2000,
-// 			"msg":  "success",
-// 			"data": gin.H{"token": tokenString},
-// 		})
-// 		return
-// 	}
-// 	c.JSON(http.StatusOK, gin.H{
-// 		"code": 2002,
-// 		"msg":  "鉴权失败",
-// 	})
-// 	return
-// }
-
-//---------------
 
 func UploadHandler(c *gin.Context) {
 	file, err := c.FormFile("file")
@@ -104,6 +73,27 @@ func Login(c *gin.Context) {
 
 }
 
+func HomeMenuHandler(c *gin.Context) {
+	// username := c.PostForm("username")
+	// password := c.PostForm("password")
+	res, err := menuInfo.GetMenuDb(c)
+	fmt.Println(res)
+	if err != nil {
+		c.JSON(5001, gin.H{
+			"code":    5001,
+			"message": "获取菜单失败",
+			"data":    gin.H{},
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    200,
+			"message": "获取菜单成功",
+			"data":    res,
+		})
+		return
+	}
+}
+
 func CalDupName(c *gin.Context) {
 	// 注意：下面为了举例子方便，暂时忽略了错误处理
 	b, err := c.GetRawData() // 从c.Request.Body读取请求数据
@@ -150,3 +140,34 @@ func Page404(c *gin.Context) {
 	// c.HTML(http.StatusNotFound, "views/404.html", nil)
 	c.Redirect(http.StatusMovedPermanently, "http://localhost:8080/page404")
 }
+
+// func AuthHandler(c *gin.Context) {
+// 	// 用户发送用户名和密码过来
+// 	var user UserInfo
+// 	err := c.ShouldBind(&user)
+// 	if err != nil {
+// 		c.JSON(http.StatusOK, gin.H{
+// 			"code": 2001,
+// 			"msg":  "无效的参数",
+// 		})
+// 		return
+// 	}
+// 	// 校验用户名和密码是否正确
+// 	if user.Username == "q1mi" && user.Password == "q1mi123" {
+// 		// 生成Token
+// 		tokenString, _ := middleWare.GenToken(user.Username)
+// 		c.JSON(http.StatusOK, gin.H{
+// 			"code": 2000,
+// 			"msg":  "success",
+// 			"data": gin.H{"token": tokenString},
+// 		})
+// 		return
+// 	}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"code": 2002,
+// 		"msg":  "鉴权失败",
+// 	})
+// 	return
+// }
+
+//---------------
