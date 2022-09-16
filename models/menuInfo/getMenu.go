@@ -2,7 +2,6 @@ package menuInfo
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -27,7 +26,7 @@ type T_menu struct {
 	Children    []T_menu `gorm:"type:varchar(64) " json:"children" binding:"required"`
 }
 
-func GetMenuDb(c *gin.Context) (gin.H, error) {
+func GetMenuDb() (gin.H, error) {
 	dsn := "root:qiudaoyu@tcp(127.0.0.1:3306)/qiudaoyu?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
@@ -66,10 +65,10 @@ func GetMenuDb(c *gin.Context) (gin.H, error) {
 				if idTemp != dataList[j].ID {
 					if dataList[j].ParentId == idTemp {
 						// dataList[i].Name = dataList[i].Name + fmt.Sprint(i)
-						fmt.Println("------------")
-						fmt.Println("原datalist", dataList[i])
+						// fmt.Println("------------")
+						// fmt.Println("原datalist", dataList[i])
 						dataList[i].Children = append(dataList[i].Children, dataList[j])
-						fmt.Println("后datalist", dataList[i])
+						// fmt.Println("后datalist", dataList[i])
 					}
 
 				}
@@ -83,7 +82,7 @@ func GetMenuDb(c *gin.Context) (gin.H, error) {
 				i--
 			}
 		}
-		fmt.Println(dataList)
+		// fmt.Println(dataList)
 		//查询到数据
 		return gin.H{
 			"data":    dataList,

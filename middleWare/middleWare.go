@@ -47,6 +47,7 @@ func ParseToken(tokenString string) (*MyClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &MyClaims{}, func(token *jwt.Token) (i interface{}, err error) {
 		return MySecret, nil
 	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +63,7 @@ func JWTAuthMiddleware() func(c *gin.Context) {
 
 		//当请求登录接口时，跳过token验证:
 		// fmt.Println(c.FullPath())
-		if c.FullPath() != "/login" {
+		if c.FullPath() != "/login" && c.FullPath() != "/admin/info" {
 			// 客户端携带Token有三种方式 1.放在请求头 2.放在请求体 3.放在URI
 			// 这里假设Token放在Header的Authorization中，并使用Bearer开头
 			// 这里的具体实现方式要依据你的实际业务情况决定

@@ -33,7 +33,7 @@ func UploadHandler(c *gin.Context) {
 	} else {
 		log.Println(file.Filename)
 
-		dst := "./" + file.Filename
+		dst := "./assets/fileRec/" + file.Filename
 		// 上传文件至指定的完整文件路径
 		c.SaveUploadedFile(file, dst)
 
@@ -54,29 +54,32 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	// 校验用户名和密码是否正确
-	if user.Username == "q" && user.Password == "q" {
+	// 校验用户名和密码是否正确,数据库取用户信息
+	//调用数据库查询，根据返回值，判定是否为t_admin表里的用户
+	res, err2 := menuInfo.LoginConfirm(user.Username, user.Password)
+	if err2 == nil {
 		// 生成Token
 		tokenString, _ := middleWare.GenToken(user.Username)
 		c.JSON(http.StatusOK, gin.H{
 			"code":    200,
 			"message": "登录成功",
-			"data":    gin.H{"token": tokenString},
+			"data":    gin.H{"token": tokenString, "userInfo": res["userInfo"]},
 		})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"code":    2002,
-		"message": "鉴权失败",
+		"message": "账号密码错误，鉴权失败",
 	})
 	return
+	// return
 
 }
 
 func HomeMenuHandler(c *gin.Context) {
 	// username := c.PostForm("username")
 	// password := c.PostForm("password")
-	res, err := menuInfo.GetMenuDb(c)
+	res, err := menuInfo.GetMenuDb()
 	fmt.Println(res)
 	if err != nil {
 		c.JSON(5001, gin.H{
@@ -88,6 +91,26 @@ func HomeMenuHandler(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    200,
 			"message": "获取菜单成功",
+			"data":    res,
+		})
+		return
+	}
+}
+
+func GetUserInfoHandler(c *gin.Context) {
+	//获取menu菜单
+	res, err := menuInfo.GetUserInfo(c)
+	fmt.Println(res)
+	if err != nil {
+		c.JSON(5001, gin.H{
+			"code":    5001,
+			"message": "获取用户信息失败",
+			"data":    gin.H{},
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    200,
+			"message": "获取用户信息成功",
 			"data":    res,
 		})
 		return

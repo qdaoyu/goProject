@@ -14,6 +14,7 @@ func LoadBase(e *gin.Engine) {
 
 	e.GET("/home", HomeMenuHandler)
 
+	e.GET("/admin/info", GetUserInfoHandler)
 	// e.POST("/auth", AuthHandler)
 
 	e.NoRoute(Page404)

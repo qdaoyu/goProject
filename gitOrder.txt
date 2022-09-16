@@ -3,3 +3,5 @@ git config --global core.autocrlf true
 git add --all
 git commit -m "备注内容"
 git push https://github.com/qdaoyu/goProject.git master
+
+git pull https://github.com/qdaoyu/goProject.git master
