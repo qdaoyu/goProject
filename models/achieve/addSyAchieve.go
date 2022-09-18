@@ -11,19 +11,48 @@ import (
 )
 
 type SyAchieve struct {
-	// ID           int       `json:"id" `
-	Name    string    `json:"name" `
-	Date    time.Time `json:"date" `
-	Achieve int       `json:"achieve" `
+	Id              int
+	Area            string
+	Depart          string
+	Name            string
+	Post            string
+	Hireday         time.Time
+	St_attendance   float64
+	Ac_attendance   float64
+	Restday         float64
+	Leaveday        float64
+	Absenteeism     float64
+	Yq_close        float64
+	Overtime        float64
+	Business_travel float64
+	Basesalary      float64
+	Wx_achieve      float64
+	Pf_achieve      float64
+	Zc_achieve      float64
+	Gd_achieve      float64
+	Bs_achieve      float64
+	Shop_achieve    float64
+	Wxpf_commission float64
+	Zc_commission   float64
+	Gd_commission   float64
+	Bs_commission   float64
+	Shop_commission float64
+	Achievement     float64
+	Subsidy         float64
+	Handcost        float64
+	Ac_basesalary   float64
+	Deduction       float64
+	Month_salary    float64
 }
 
 // 批量新增塑颜业绩表
-func AddSyAchieve(syAchieve []SyAchieve) {
-	var err error = models.Conn.Table("t_syAchieve").Create(&syAchieve).Error
-	if err == nil {
+func AddSyAchieve(syAchieve []SyAchieve) error {
+	var err error = models.Conn.Table("t_syachieve").Create(&syAchieve).Error
+	if err != nil {
 		log.Println(err)
-		return
+		return err
 	}
+	return nil
 
 }
 
@@ -35,6 +64,35 @@ func ExcelDateToDate(excelDate string) (time.Time, error) {
 		return time.Date(1900, 1, 30, 0, 0, 0, 0, time.UTC), err
 	}
 	return excelTime.Add(time.Second * time.Duration(days*86400)), nil
+}
+
+func StrToInt(str string) int {
+	if str == "" {
+		return 0
+	} else {
+		res, err := strconv.Atoi(str)
+		if err != nil {
+			log.Println(err)
+			return -1111
+		}
+		return res
+
+	}
+
+}
+
+func StrToFloat(str string) float64 {
+	if str == "" {
+		return 0
+	} else {
+		res, err := strconv.ParseFloat(str, 64)
+		if err != nil {
+			log.Println(err)
+			return -1111.11
+		}
+		return res
+	}
+
 }
 
 // 获取上传的文件，存储后进行读取并存入数据库
@@ -74,51 +132,71 @@ func SyAchieveExcelize(c *gin.Context) error {
 func ReadExcel(xlsx *excelize.File) error {
 	//根据名字获取cells的内容，返回的是一个[][]string
 	// rows := xlsx.GetRows(xlsx.GetSheetName(xlsx.GetActiveSheetIndex()))
-	rows := xlsx.GetRows("Sheet1")
+	rows, err := xlsx.Rows("Sheet1")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	j := 0
 	//声明一个数组
 	var datas []SyAchieve
-	for i, row := range rows {
-		// 去掉第一行是execl表头部分
-		if i == 0 {
-			log.Println(row)
+	var data SyAchieve
 
+	for rows.Next() {
+		row := rows.Columns()
+		if j == 0 {
+			//判断表抬头是否正确
+			log.Println("以后验证抬头")
+			j++
+			continue
 		}
-		var data SyAchieve
-		for k, v := range row {
-			// 第一列是员工姓名
-			if k == 0 {
+		log.Println(row)
+		data.Id = StrToInt(row[0])
+		data.Area = row[1]
+		data.Depart = row[2]
+		data.Name = row[3]
+		data.Post = row[4]
 
-				log.Println("姓名起始:", v)
-				data.Name = v
-				log.Println("姓名结束:", data.Name)
-			}
-			//
-			if k == 1 {
-				log.Println("日期起始:", v)
-				// currentDate := row[1]
-				currentDate, err1 := ExcelDateToDate(v)
-				if err1 != nil {
-					log.Println(err1)
-					return err1
-
-				}
-				// log.Println("current_date is " + currentDate.Format("2006-01-02 15:04:05"))
-				data.Date = currentDate
-				log.Println("日期结束:", data.Date)
-			}
-			//
-			if k == 2 {
-				log.Println("业绩起始:", v)
-				vInt, _ := strconv.Atoi(v)
-				data.Achieve = vInt
-				log.Println("业绩结束:", data.Achieve)
-			}
+		currentDate, err := ExcelDateToDate(row[5])
+		if err != nil {
+			log.Println("塑颜业绩表入职日期转化失败:", err)
 		}
-		//将数据追加到datas数组中
+		data.Hireday = currentDate
+		data.St_attendance = StrToFloat(row[6])
+		data.Ac_attendance = StrToFloat(row[7])
+		data.Restday = StrToFloat(row[8])
+		data.Leaveday = StrToFloat(row[9])
+		data.Absenteeism = StrToFloat(row[10])
+		data.Yq_close = StrToFloat(row[11])
+		data.Overtime = StrToFloat(row[12])
+		data.Business_travel = StrToFloat(row[13])
+		data.Basesalary = StrToFloat(row[14])
+		data.Wx_achieve = StrToFloat(row[15])
+		data.Pf_achieve = StrToFloat(row[16])
+		data.Zc_achieve = StrToFloat(row[17])
+		data.Gd_achieve = StrToFloat(row[18])
+		data.Bs_achieve = StrToFloat(row[19])
+		data.Shop_achieve = StrToFloat(row[20])
+		data.Wxpf_commission = StrToFloat(row[21])
+		data.Zc_commission = StrToFloat(row[22])
+		data.Gd_commission = StrToFloat(row[23])
+		data.Bs_commission = StrToFloat(row[24])
+		data.Shop_commission = StrToFloat(row[25])
+		data.Achievement = StrToFloat(row[26])
+		data.Subsidy = StrToFloat(row[27])
+		data.Handcost = StrToFloat(row[28])
+		data.Ac_basesalary = StrToFloat(row[29])
+		data.Deduction = StrToFloat(row[30])
+		data.Month_salary = StrToFloat(row[31])
+
 		datas = append(datas, data)
-
+		j++
 	}
-
-	AddSyAchieve(datas)
+	// log.Println(datas)
+	err = AddSyAchieve(datas)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 	return nil
 }

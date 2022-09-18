@@ -173,9 +173,9 @@ func GetSyAchieveInfoHandler(c *gin.Context) {
 	// userID, _ := strconv.Atoi(c.Request.Header.Get("userID"))
 	err := achieve.SyAchieveExcelize(c)
 	if err != nil {
-		c.JSON(5001, gin.H{
+		c.JSON(200, gin.H{
 			"code":    5001,
-			"message": "插入塑颜业绩数据库失败",
+			"message": "插入塑颜业绩数据库失败,原因:" + err.Error(),
 			"data":    nil,
 		})
 	} else {

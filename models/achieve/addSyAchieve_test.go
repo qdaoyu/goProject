@@ -3,7 +3,6 @@ package achieve
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"testing"
 	"time"
 
@@ -48,34 +47,34 @@ type Achieve struct {
 	Month_salary    float64
 }
 
-func StrToInt(str string) int {
-	if str == "" {
-		return 0
-	} else {
-		res, err := strconv.Atoi(str)
-		if err != nil {
-			log.Println(err)
-			return -1111
-		}
-		return res
+// func StrToInt(str string) int {
+// 	if str == "" {
+// 		return 0
+// 	} else {
+// 		res, err := strconv.Atoi(str)
+// 		if err != nil {
+// 			log.Println(err)
+// 			return -1111
+// 		}
+// 		return res
 
-	}
+// 	}
 
-}
+// }
 
-func StrToFloat(str string) float64 {
-	if str == "" {
-		return 0
-	} else {
-		res, err := strconv.ParseFloat(str, 64)
-		if err != nil {
-			log.Println(err)
-			return -1111.11
-		}
-		return res
-	}
+// func StrToFloat(str string) float64 {
+// 	if str == "" {
+// 		return 0
+// 	} else {
+// 		res, err := strconv.ParseFloat(str, 64)
+// 		if err != nil {
+// 			log.Println(err)
+// 			return -1111.11
+// 		}
+// 		return res
+// 	}
 
-}
+// }
 
 func TestAddSyAchieve(t *testing.T) {
 	//读取excel
