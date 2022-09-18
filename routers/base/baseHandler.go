@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"os/exec"
 	"qiudaoyu/middleWare"
+	"qiudaoyu/models/achieve"
 	"qiudaoyu/models/menuInfo"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,7 +28,7 @@ type UserInfo struct {
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
-func UploadHandler(c *gin.Context) {
+func UploadSyAchieveTb(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
 		fmt.Println(err)
@@ -59,27 +61,55 @@ func Login(c *gin.Context) {
 	res, err2 := menuInfo.LoginConfirm(user.Username, user.Password)
 	if err2 == nil {
 		// 生成Token
-		tokenString, _ := middleWare.GenToken(user.Username)
-		c.JSON(http.StatusOK, gin.H{
-			"code":    200,
-			"message": "登录成功",
-			"data":    gin.H{"token": tokenString, "userInfo": res["userInfo"]},
-		})
+		fmt.Println("res:", res)
+		// var userStruct menuInfo.User
+		// err3 := json.Unmarshal(res, &userStruct)
+		// resByte, _ := reflect.TypeOf(res["userInfo"]).FieldByName("ID")
+		// fmt.Println("res:", reflect.TypeOf(res))
+		// fmt.Println(reflect.TypeOf(res["userInfo"]).FieldByName("ID"))
+		// fmt.Println(reflect.ValueOf(res["userInfo"]).FieldByName("ID").Int())  res["userInfo"].ID
+		fmt.Println(res["userInfo"])
+		// res.
+		// fmt.Println(res["userInfo"].ID)
+
+		//类型断言
+		userId, ok := res["userInfo"].(menuInfo.User)
+		if ok {
+			fmt.Println(userId.ID)
+			// tokenString, _ := middleWare.GenToken(user.Username, reflect.ValueOf(res["userInfo"]).FieldByName("ID").Int())
+			tokenString, _ := middleWare.GenToken(user.Username, int64(userId.ID))
+			c.JSON(http.StatusOK, gin.H{
+				"code":    200,
+				"message": "登录成功",
+				"data":    gin.H{"token": tokenString, "userInfo": res["userInfo"]},
+			})
+			return
+
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"code":    2002,
+				"message": "用户名或密码错误",
+			})
+		}
+		// tokenString, _ := middleWare.GenToken(user.Username, reflect.ValueOf(res["userInfo"]).FieldByName("ID").Int())
+
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"code":    2002,
-		"message": "账号密码错误，鉴权失败",
-	})
-	return
-	// return
-
 }
 
 func HomeMenuHandler(c *gin.Context) {
 	// username := c.PostForm("username")
 	// password := c.PostForm("password")
-	res, err := menuInfo.GetMenuDb()
+	userID, err1 := strconv.Atoi(c.Request.Header.Get("userID"))
+	if err1 != nil {
+		c.JSON(5001, gin.H{
+			"code":    5001,
+			"message": "获取菜单失败",
+			"data":    gin.H{},
+		})
+		return
+	}
+	res, err := menuInfo.GetMenuDb(userID)
 	fmt.Println(res)
 	if err != nil {
 		c.JSON(5001, gin.H{
@@ -87,6 +117,7 @@ func HomeMenuHandler(c *gin.Context) {
 			"message": "获取菜单失败",
 			"data":    gin.H{},
 		})
+		return
 	} else {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    200,
@@ -112,6 +143,45 @@ func GetUserInfoHandler(c *gin.Context) {
 			"code":    200,
 			"message": "获取用户信息成功",
 			"data":    res,
+		})
+		return
+	}
+}
+
+func GetUserBasicInfoHandler(c *gin.Context) {
+	//获取menu菜单
+	userID, _ := strconv.Atoi(c.Request.Header.Get("userID"))
+	res, err := menuInfo.GetUserBasicInfo(c, userID)
+	fmt.Println(res)
+	if err != nil {
+		c.JSON(5001, gin.H{
+			"code":    5001,
+			"message": "获取用户基本信息失败",
+			"data":    nil,
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    200,
+			"message": "获取用户基本信息成功",
+			"data":    res,
+		})
+		return
+	}
+}
+func GetSyAchieveInfoHandler(c *gin.Context) {
+
+	// userID, _ := strconv.Atoi(c.Request.Header.Get("userID"))
+	err := achieve.SyAchieveExcelize(c)
+	if err != nil {
+		c.JSON(5001, gin.H{
+			"code":    5001,
+			"message": "插入塑颜业绩数据库失败",
+			"data":    nil,
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    200,
+			"message": "插入塑颜业绩数据库成功",
 		})
 		return
 	}

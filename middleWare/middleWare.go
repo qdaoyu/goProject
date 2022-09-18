@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,18 +19,20 @@ import (
 // 如果想要保存更多信息，都可以添加到这个结构体中
 type MyClaims struct {
 	Username string `json:"username"`
+	Userid   int64  `json:"userid"`
 	jwt.StandardClaims
 }
 
-const TokenExpireDuration = time.Hour * 2
+const TokenExpireDuration = time.Hour * 3
 
 var MySecret = []byte("夏天夏天悄悄过去")
 
 // GenToken 生成JWT
-func GenToken(username string) (string, error) {
+func GenToken(username string, userid int64) (string, error) {
 	// 创建一个我们自己的声明
 	c := MyClaims{
 		username, // 自定义字段
+		userid,   //用户ID
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(TokenExpireDuration).Unix(), // 过期时间
 			Issuer:    "qiudaoyu",                                 // 签发人
@@ -68,7 +71,8 @@ func JWTAuthMiddleware() func(c *gin.Context) {
 			// 这里假设Token放在Header的Authorization中，并使用Bearer开头
 			// 这里的具体实现方式要依据你的实际业务情况决定
 			authHeader := c.Request.Header.Get("Authorization")
-			fmt.Printf("token:%s", authHeader)
+			uid, _ := strconv.Atoi(c.Request.Header.Get("userID"))
+			fmt.Printf("token:%s\n", authHeader)
 			if authHeader == "" {
 				// c.Redirect(http.StatusMovedPermanently, "http://localhost:8080")
 				c.JSON(http.StatusOK, gin.H{
@@ -90,7 +94,21 @@ func JWTAuthMiddleware() func(c *gin.Context) {
 				return
 			}
 			// parts[1]是获取到的tokenString，我们使用之前定义好的解析JWT的函数来解析它
+			// fmt.Println("----------------------")
 			mc, err := ParseToken(parts[1])
+			// fmt.Println("mc", mc)
+			// fmt.Println("mc", mc.Username)
+			// fmt.Println("mc", mc.Userid)
+			//判断userid是否有误
+			if mc.Userid != int64(uid) {
+				c.JSON(http.StatusOK, gin.H{
+					"code":    2006,
+					"message": "userid错误,与token存储信息匹配失败",
+				})
+				c.Abort()
+				return
+			}
+
 			if err != nil {
 				c.JSON(http.StatusOK, gin.H{
 					"code":    2005,

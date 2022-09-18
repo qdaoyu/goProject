@@ -6,7 +6,7 @@ import (
 
 func LoadBase(e *gin.Engine) {
 
-	e.POST("/upload", UploadHandler)
+	e.POST("/upload/suyan/achiveTable'", UploadSyAchieveTb)
 
 	e.POST("/login", Login)
 
@@ -15,6 +15,10 @@ func LoadBase(e *gin.Engine) {
 	e.GET("/home", HomeMenuHandler)
 
 	e.GET("/admin/info", GetUserInfoHandler)
+
+	e.GET("/admin/basic/info", GetUserBasicInfoHandler)
+
+	e.POST("/achieve/sy/add", GetSyAchieveInfoHandler)
 	// e.POST("/auth", AuthHandler)
 
 	e.NoRoute(Page404)
