@@ -20,9 +20,9 @@ func LoadBase(e *gin.Engine) {
 
 	e.POST("/achieve/sy/info/add", AddSyAchieveInfoHandler)
 
-	e.GET("/achieve/sy/info/search", GetSyAchieveInfoHandler)
+	e.GET("/achieve/sy/info/get", GetSyAchieveInfoHandler)
 	// e.POST("/auth", AuthHandler)
 
-	e.NoRoute(Page404)
+	// e.NoRoute(Page404)
 
 }

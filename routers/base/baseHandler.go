@@ -190,7 +190,16 @@ func AddSyAchieveInfoHandler(c *gin.Context) {
 // 获取塑颜业绩表信息(管理员_id1和测试角色_id2默认可以返回所有数据)
 func GetSyAchieveInfoHandler(c *gin.Context) {
 	var syMap = make(map[string]interface{})
-
+	currentPage, err := strconv.Atoi(c.Query("currentPage"))
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	size, err := strconv.Atoi(c.Query("size"))
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	userID, _ := strconv.Atoi(c.Request.Header.Get("userID"))
 	//类型断言
 	userName, _ := c.Get("username")
@@ -205,7 +214,7 @@ func GetSyAchieveInfoHandler(c *gin.Context) {
 		})
 		return
 	}
-	syMap, err := achieve.GetSyAchieve(userID, userNameAssert)
+	syMap, err = achieve.GetSyAchieve(userID, userNameAssert, currentPage, size)
 	if err != nil {
 		c.JSON(200, gin.H{
 			"code":    5002,
@@ -218,6 +227,7 @@ func GetSyAchieveInfoHandler(c *gin.Context) {
 			"code":    200,
 			"message": syMap["message"],
 			"data":    syMap["data"],
+			"total":   syMap["total"],
 		})
 		return
 	}
