@@ -195,6 +195,7 @@ func GetSyAchieveInfoHandler(c *gin.Context) {
 	//类型断言
 	userName, _ := c.Get("username")
 	userNameAssert, ok := userName.(string)
+	// log.Println("测试:", userID, userName)
 	// userName, _ := c.Get("username")
 	if !ok {
 		c.JSON(200, gin.H{

@@ -27,7 +27,7 @@ type User struct {
 	Password  string `gorm:"type:int(0) " json:"password" binding:"required"`
 	Userface  string `gorm:"type:varchar(255) " json:"userface" binding:"-"`
 	Remark    string `gorm:"type:varchar(255) " json:"remark" binding:"-"`
-	Roleid    string `gorm:"type:int(0) " json:"roleid" binding:"-"`
+	Roleid    int    `gorm:"type:int(0) " json:"roleid" binding:"-"`
 }
 
 // 用户信息
