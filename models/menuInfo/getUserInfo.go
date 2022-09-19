@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"time"
 
+	"qiudaoyu/models"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -86,12 +88,12 @@ func LoginConfirm(userName string, passWord string) (gin.H, error) {
 func GetUserInfo(c *gin.Context) (gin.H, error) {
 	//从token中获取用户名username
 	// dsn := "root:qiudaoyu@tcp(127.0.0.1:3306)/qiudaoyu?charset=utf8mb4&parseTime=True&loc=Local"
-	db, _ := DbCommonOperation(Dsn)
+	// db, _ := DbCommonOperation(Dsn)
 
 	//获取个人信息
 	var user User
 	username, exist := c.Get("username")
-	db.Table("t_admin").Where("username = ? ", username).Find(&user)
+	models.Conn.Table("t_admin").Where("username = ? ", username).Find(&user)
 	// fmt.Println(t_menu)
 	if !exist {
 		return gin.H{"message": "用户信息获取失败"}, errors.New("用户信息获取失败")
@@ -107,11 +109,11 @@ func GetUserInfo(c *gin.Context) (gin.H, error) {
 func GetUserBasicInfo(c *gin.Context, userID int) (AdminInfo, error) {
 	//从token中获取用户名username
 	// dsn := "root:qiudaoyu@tcp(127.0.0.1:3306)/qiudaoyu?charset=utf8mb4&parseTime=True&loc=Local"
-	db, _ := DbCommonOperation(Dsn)
+	// db, _ := DbCommonOperation(Dsn)
 	//获取个人信息
 	var user AdminInfo
 	sqlString := "select t_admin.`name`,t_admin.phone,t_admin.username,t_admin.address,t_role.namezh from t_admin LEFT JOIN t_role on t_admin.roleid = t_role.id where t_admin.id = ?"
-	db.Raw(sqlString, userID).Scan(&user)
+	models.Conn.Raw(sqlString, userID).Scan(&user)
 	// db.Raw(sqlString, userID).Create(&user)
 	fmt.Println(user)
 	// fmt.Println(t_menu)

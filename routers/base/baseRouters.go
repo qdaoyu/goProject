@@ -18,7 +18,9 @@ func LoadBase(e *gin.Engine) {
 
 	e.GET("/admin/basic/info", GetUserBasicInfoHandler)
 
-	e.POST("/achieve/sy/add", GetSyAchieveInfoHandler)
+	e.POST("/achieve/sy/info/add", AddSyAchieveInfoHandler)
+
+	e.GET("/achieve/sy/info/search", GetSyAchieveInfoHandler)
 	// e.POST("/auth", AuthHandler)
 
 	e.NoRoute(Page404)
